@@ -1,0 +1,10 @@
+.stack-work/
+lzw-streaming.cabal
+*~
+
+resources/
+
+docs
+*.hp
+*.prof
+*.svg

@@ -1,0 +1,104 @@
+name:                lzw-streaming
+version:             0.1.0.0
+github:              "SilverSylvester/lzw-streaming"
+license:             MIT
+author:              "Conor Reynolds"
+maintainer:          "reynolds.conor@gmail.com"
+copyright:           "(c) 2019, Conor Reynolds"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/SilverSylvester/lzw-streaming#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+default-extensions:
+- ApplicativeDo
+- BangPatterns
+- ConstraintKinds
+- DataKinds
+- DefaultSignatures
+- DeriveFoldable
+- DeriveFunctor
+- DeriveGeneric
+- DeriveLift
+- DeriveTraversable
+- DerivingStrategies
+- EmptyCase
+- ExistentialQuantification
+- FlexibleContexts
+- FlexibleInstances
+- FunctionalDependencies
+- GADTs
+- GeneralizedNewtypeDeriving
+- InstanceSigs
+- KindSignatures
+- LambdaCase
+- MultiParamTypeClasses
+- MultiWayIf
+- NamedFieldPuns
+- NoImplicitPrelude
+- OverloadedStrings
+- PatternSynonyms
+- RankNTypes
+- ScopedTypeVariables
+- StandaloneDeriving
+- TupleSections
+- TypeApplications
+- TypeFamilies
+- TypeFamilyDependencies
+- TypeOperators
+
+library:
+  source-dirs: src
+  dependencies:
+  - relude
+  - mtl
+  - text
+  - bytestring
+  - containers
+  - unordered-containers
+  - binary
+  - streaming
+  - streaming-bytestring
+  - QuickCheck
+  - quickcheck-instances
+  - cryptohash
+  - bytestring-trie
+
+executables:
+  lzw-streaming:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - lzw-streaming
+
+tests:
+  lzw-streaming-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - lzw-streaming
+    - QuickCheck
+    - quickcheck-instances
+    - text
+    - bytestring
+    - streaming
+    - streaming-bytestring
