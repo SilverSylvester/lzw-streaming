@@ -197,11 +197,12 @@ decompress = Q.fromChunks . S.unfoldr loop
 onTheFlyCompress :: IO ()
 onTheFlyCompress = do
   IO.hSetBuffering stdin IO.NoBuffering
+  let stream = Q.stdin
+             & compress
+             & S.map (\n -> "\t" ++ show n)
+             & S.stdoutLn
+  
   evalStateT stream initEncTable
-  where stream = Q.stdin
-                & compress
-                & S.map (\n -> "\t" ++ show n)
-                & S.stdoutLn
 
 
 -- | Decompresses codes on arrival from stdin. For demonstration purposes. Note
@@ -210,11 +211,12 @@ onTheFlyCompress = do
 onTheFlyDecompress :: IO ()
 onTheFlyDecompress = do
   IO.hSetBuffering stdin IO.LineBuffering
+  let stream = S.stdinLn
+             & S.read
+             & decompress
+             & Q.stdout
+
   evalStateT stream initDecTable
-  where stream = S.stdinLn
-               & S.read
-               & decompress
-               & Q.stdout
 
 
 -- | Compress from 'input' to 'output' in constant space.
