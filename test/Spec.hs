@@ -17,8 +17,8 @@ prop_encodeDecodeInvertEachOther :: LByteString -> Bool
 prop_encodeDecodeInvertEachOther string =
   let result = runIdentity $
           Q.fromLazy string
-        & LZW.decode
         & LZW.encode
+        & LZW.decode
         & Q.toLazy_
   
   in  B.filter (/= 0) result == B.filter (/= 0) string
@@ -31,12 +31,12 @@ prop_compressDecompressInvertEachOther string =
   let compressed = runIdentity $ flip evalStateT LZW.initEncTable
         $ Q.fromLazy string
         & LZW.compress
-        & LZW.encode
+        & LZW.decode
         & Q.toLazy_
 
       decompressed = runIdentity $ flip evalStateT LZW.initDecTable
         $ Q.fromLazy compressed
-        & LZW.decode
+        & LZW.encode
         & LZW.decompress
         & Q.toLazy_
 
