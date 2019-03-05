@@ -214,6 +214,7 @@ onTheFlyDecompress = do
   let stream = S.stdinLn
              & S.read
              & decompress
+             & Q.chunkMap (flip B.snoc (fromIntegral $ ord '\t'))
              & Q.stdout
 
   evalStateT stream initDecTable
