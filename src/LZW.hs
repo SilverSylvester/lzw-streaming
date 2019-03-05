@@ -42,9 +42,9 @@ infixl 9 !
 (!) t bs = Unsafe.fromJust $ T.lookup bs t
 
 
--- | Encodes a stream of integer codes as 16 bit words.
-encode :: Monad m => Stream (Of Int) m r -> Q.ByteString m r
-encode = Q.fromChunks . S.map toBinary
+-- | Decodes a stream of integer codes as 16 bit words.
+decode :: Monad m => Stream (Of Int) m r -> Q.ByteString m r
+decode = Q.fromChunks . S.map toBinary
   where
     toBinary code = 
       let bytes = map fromIntegral
@@ -54,10 +54,10 @@ encode = Q.fromChunks . S.map toBinary
       in  B.pack bytes
 
 
--- | Decodes a bytestream (chunked by 16 bits) into a stream of codes for
+-- | Encodes a bytestream (chunked by 16 bits) into a stream of codes for
 -- decompression.
-decode :: Monad m => Q.ByteString m r -> Stream (Of Int) m r
-decode = S.unfoldr loop . mapped S.toList . chunksOf 2 . Q.unpack
+encode :: Monad m => Q.ByteString m r -> Stream (Of Int) m r
+encode = S.unfoldr loop . mapped S.toList . chunksOf 2 . Q.unpack
   where                                 --  ^^^^^^^^^^ guarantees that the list has 1 or 2 elements.
     loop s = do
       S.next s >>= \case
@@ -227,7 +227,7 @@ compressFile input output =
   withFile output WriteMode $ \hOut -> do
     let stream = Q.fromHandle hIn
                 & compress
-                & encode
+                & decode
                 & Q.toHandle hOut
     
     evalStateT stream initEncTable
@@ -239,7 +239,7 @@ decompressFile input output =
   withFile input  ReadMode  $ \hIn ->
   withFile output WriteMode $ \hOut -> do
     let stream = Q.fromHandle hIn
-               & decode
+               & encode
                & decompress
                & Q.toHandle hOut
     
