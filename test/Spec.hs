@@ -51,12 +51,12 @@ prop_compressDecompressInvertEachOther1M (ABS1M string) =
   let compressed = runIdentity $ flip evalStateT LZW.initEncTable
         $ Q.fromLazy (fromStrict string)
         & LZW.compress
-        & LZW.encode
+        & LZW.decode
         & Q.toLazy_
 
       decompressed = runIdentity $ flip evalStateT LZW.initDecTable
         $ Q.fromLazy compressed
-        & LZW.decode
+        & LZW.encode
         & LZW.decompress
         & Q.toLazy_
 
