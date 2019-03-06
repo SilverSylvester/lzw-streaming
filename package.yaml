@@ -71,9 +71,7 @@ library:
   - streaming
   - streaming-bytestring
   - QuickCheck
-  - quickcheck-instances
   - cryptohash
-  - bytestring-trie
 
 executables:
   lzw-streaming:

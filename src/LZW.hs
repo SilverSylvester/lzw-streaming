@@ -22,10 +22,8 @@ import qualified Data.Binary                   as Binary
 import           Data.Word
 import qualified Data.ByteString               as B
 
-import           Data.Trie                     ( Trie )
-import qualified Data.Trie                     as T
-import           Data.IntMap                   (IntMap)
-import qualified Data.IntMap                   as M
+import           Data.HashMap.Strict            ( (!) )
+import qualified Data.HashMap.Strict           as M
 
 import           Streaming
 import qualified Streaming.Prelude             as S
@@ -33,13 +31,6 @@ import qualified Data.ByteString.Streaming     as Q
 
 import qualified System.IO                     as IO
 
-
-infixl 9 !
-
--- | Unsafe trie lookup. Convenient when you are certain the lookup cannot fail,
--- although usually this is discouraged.
-(!) :: Trie a -> ByteString -> a
-(!) t bs = Unsafe.fromJust $ T.lookup bs t
 
 
 -- | Decodes a stream of integer codes as 16 bit words.
@@ -77,7 +68,7 @@ encode = S.unfoldr loop . mapped S.toList . chunksOf 2 . Q.unpack
 -- A regular 'HashMap' doesn't carry size information, so we have to do that
 -- manually.
 data EncTable = EncTable
-  { encTable :: Trie Int
+  { encTable :: HashMap ByteString Int
   , encSize  :: {-# UNPACK #-} !Int
   }
 
@@ -85,7 +76,7 @@ data EncTable = EncTable
 -- | Initial 'EncTable' filled with all single-character codes.
 initEncTable :: EncTable
 initEncTable = EncTable
-  { encTable = T.fromList [(B.singleton n, fromIntegral n) | n <- [0..]]
+  { encTable = fromList [(B.singleton n, fromIntegral n) | n <- [0..]]
   , encSize  = fromIntegral (maxBound :: Word8)
   }
 
@@ -94,7 +85,7 @@ initEncTable = EncTable
 -- "size + 1".
 updateEncTable :: ByteString -> EncTable -> EncTable
 updateEncTable s table = table
-  { encTable = T.insert s (encSize table + 1) (encTable table)
+  { encTable = M.insert s (encSize table + 1) (encTable table)
   , encSize  = encSize table + 1
   }
 
@@ -116,7 +107,7 @@ compress = S.unfoldr (loop []) . Q.unpack
               oldBS    = B.pack bytes
               newBS    = B.pack newBytes
 
-          if T.member newBS table
+          if M.member newBS table
             then loop newBytes rest
             else do
               let code = table ! oldBS
@@ -134,7 +125,7 @@ compress = S.unfoldr (loop []) . Q.unpack
 -- | Decoding table. This table needs to also keep track of a previously seen
 -- bytestring for later processing.
 data DecTable = DecTable
-  { decTable    :: IntMap ByteString
+  { decTable    :: HashMap Int ByteString
   , decPrevious :: !ByteString
   , decSize     :: {-# UNPACK #-} !Int
   }
@@ -178,8 +169,8 @@ decompress = Q.fromChunks . S.unfoldr loop
           if B.null previous
             then do
               when (size < 65535) $
-                modify $ updatePrevious (table M.! code)
-              return $ Right (table M.! code, rest)
+                modify $ updatePrevious (table ! code)
+              return $ Right (table ! code, rest)
 
             else do
               let entry = fromMaybe (previous `B.snoc` B.head previous) (M.lookup code table)
